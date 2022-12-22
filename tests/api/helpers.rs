@@ -1,3 +1,5 @@
+use dotenvy::dotenv;
+use dotenvy_macro::dotenv;
 use std::net::TcpListener;
 use todo_server_axum::{app_state::AppState, run};
 
@@ -13,9 +15,11 @@ fn port_is_available(port: u16) -> bool {
 }
 
 pub async fn spwan_app() -> AppState {
+    dotenv().ok();
+    let uri: String = dotenv!("API_URI").to_owned();
     let state;
     if let Some(port) = get_available_port() {
-        let app_state = AppState { port };
+        let app_state = AppState { port, uri };
         state = app_state.clone();
         tokio::spawn(async move { run(&app_state).await.expect("Failed to run the server") });
     } else {

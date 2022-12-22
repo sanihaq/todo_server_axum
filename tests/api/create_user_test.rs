@@ -13,10 +13,7 @@ async fn create_user_works() {
     };
 
     let response = client
-        .post(&format!(
-            "{}:{}/api/v1/users",
-            "http://localhost", state.port
-        ))
+        .post(&format!("{}:{}/api/v1/users", state.uri, state.port))
         .send()
         .await
         .expect("Failed to execute request.");

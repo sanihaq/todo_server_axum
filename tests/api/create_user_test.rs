@@ -1,19 +1,17 @@
 use super::helpers::spwan_app;
-use todo_server_axum::routes::users::ResponseUser;
+use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};
 
 #[tokio::test]
 async fn create_user_works() {
     let state = spwan_app().await;
     let client = reqwest::Client::new();
 
-    let _mock_user = ResponseUser {
-        id: 123,
-        username: "".to_owned(),
-        token: "".to_owned(),
-    };
-
     let response = client
         .post(&format!("{}:{}/api/v1/users", state.uri, state.port))
+        .body(RequestCreateUser {
+            username: "hello".to_owned(),
+            password: "world".to_owned(),
+        })
         .send()
         .await
         .expect("Failed to execute request.");

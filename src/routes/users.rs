@@ -1,4 +1,3 @@
-use reqwest::Body;
 use serde::{Deserialize, Serialize};
 
 pub mod create_user;
@@ -14,10 +13,4 @@ pub struct ResponseUser {
 pub struct RequestCreateUser {
     pub username: String,
     pub password: String,
-}
-
-impl Into<Body> for RequestCreateUser {
-    fn into(self) -> Body {
-        todo!()
-    }
 }

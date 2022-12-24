@@ -1,4 +1,5 @@
 use super::helpers::spwan_app;
+use reqwest::StatusCode;
 use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};
 
 #[tokio::test]
@@ -7,15 +8,13 @@ async fn create_user_works() {
     let client = reqwest::Client::new();
 
     let user = RequestCreateUser {
-        username: "tom".to_owned(),
-        password: "tomsworld".to_owned(),
+        username: "hello".to_owned(),
+        password: "world".to_owned(),
     };
-
-    dbg!("{}", serde_json::to_string(&user).unwrap());
 
     let response = client
         .post(&format!("{}:{}/api/v1/users", state.uri, state.port))
-        .body(serde_json::to_string(&user).unwrap())
+        .json(&user)
         .send()
         .await
         .expect("Failed to execute request.");
@@ -32,4 +31,12 @@ async fn create_user_works() {
         }
         Err(e) => panic!("Error decoding response: , {}", e),
     }
+
+    let response = client
+        .post(&format!("{}:{}/api/v1/users", state.uri, state.port))
+        .json(&user)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+    assert_eq!(response.status(), StatusCode::CONFLICT);
 }

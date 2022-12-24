@@ -1,7 +1,7 @@
 use super::{RequestCreateUser, ResponseUser};
 use crate::{
     database::users::{self, Entity as Users},
-    utilities::app_error::AppError,
+    utilities::app_error::{general_server_error, AppError},
 };
 use axum::{extract::State, http::StatusCode, Json};
 use sea_orm::{
@@ -16,12 +16,7 @@ pub async fn create_user(
         .filter(users::Column::Username.eq(req_user.username.clone()))
         .one(&db)
         .await
-        .map_err(|_| {
-            AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Something went wrong, please try again.",
-            )
-        })?
+        .map_err(|_| general_server_error())?
     {
         return Err(AppError::new(StatusCode::CONFLICT, "User already exists."));
     }
@@ -35,10 +30,7 @@ pub async fn create_user(
         .await
         .map_err(|error| {
             eprintln!("Error creating user: {:?}", error);
-            AppError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Something went wrong, please try again.",
-            )
+            general_server_error()
         })?
         .try_into_model()
         .map_err(|error| {

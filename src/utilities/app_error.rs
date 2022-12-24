@@ -27,6 +27,13 @@ impl IntoResponse for AppError {
     }
 }
 
+pub fn general_server_error() -> AppError {
+    AppError::new(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "Something went wrong, please try again.",
+    )
+}
+
 #[derive(Serialize, Deserialize)]
 struct ErrorResponse {
     error_message: String,

@@ -1,8 +1,8 @@
-use super::helpers::spwan_app;
+use super::helpers::spawn_app;
 
 #[tokio::test]
 async fn health_check_works() {
-    let state = spwan_app().await;
+    let state = spawn_app().await;
     let client = reqwest::Client::new();
 
     let response = client

@@ -1,10 +1,10 @@
-use super::helpers::spwan_app;
+use super::helpers::spawn_app;
 use reqwest::StatusCode;
 use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};
 
 #[tokio::test]
 async fn create_user_works() {
-    let state = spwan_app().await;
+    let state = spawn_app().await;
     let client = reqwest::Client::new();
 
     let user = RequestCreateUser {

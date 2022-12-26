@@ -3,6 +3,7 @@ use crate::{
     database::users::{self, Entity as Users},
     utilities::{
         app_error::{general_server_error, AppError},
+        hash::hash_password,
         jwt::{create_token, TokenWrapper},
     },
 };
@@ -28,7 +29,7 @@ pub async fn create_user(
         ..Default::default()
     };
     user.username = Set(req_user.username.clone());
-    user.password = Set(req_user.password);
+    user.password = Set(hash_password(&req_user.password)?);
     user.token = Set(Some(create_token(&jwt_secret.0, req_user.username)?));
     let user = user
         .save(&db)

@@ -1,8 +1,8 @@
-use super::helpers::spawn_app;
+use super::helpers::{drop_database_after_test, spawn_app};
 
 #[tokio::test]
 async fn health_check_works() {
-    let state = spawn_app().await;
+    let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
 
     let response = client
@@ -13,4 +13,6 @@ async fn health_check_works() {
 
     assert!(response.status().is_success());
     assert_eq!(response.content_length(), Some(0));
+
+    drop_database_after_test(state.db, db_info).await;
 }

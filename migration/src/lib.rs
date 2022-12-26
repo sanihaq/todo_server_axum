@@ -19,11 +19,11 @@ impl MigratorTrait for Migrator {
 
 /// set `drop_if_exist` to `true` to create database for the first time or to recreate and reset otherwise leave it to `false`
 pub async fn run_migration(
-    db_url: String,
-    db_name: String,
+    db_url: &String,
+    db_name: &String,
     drop_if_exist: bool,
 ) -> Result<(), DbErr> {
-    let db = Database::connect(&db_url).await?;
+    let db = Database::connect(db_url).await?;
 
     let _ = if let sea_orm::DatabaseBackend::Postgres = db.get_database_backend() {
         if drop_if_exist {
@@ -32,6 +32,8 @@ pub async fn run_migration(
     } else {
         panic!("database supposed to be Postgres!!")
     };
+
+    let _ = db.close().await.map_err(|e| e);
 
     let db = Database::connect(format!("{}/{}", db_url, db_name)).await?;
 
@@ -43,6 +45,8 @@ pub async fn run_migration(
     let schema_manager = SchemaManager::new(&db); // To investigate the schema
     assert!(schema_manager.has_table("users").await?);
     assert!(schema_manager.has_table("tasks").await?);
+
+    let _ = db.close().await.map_err(|e| e);
 
     Ok(())
 }

@@ -15,7 +15,7 @@ async fn main() -> Result<(), DbErr> {
         false
     };
 
-    run_migration(db_url, db_name, delete_if_exist).await?;
+    run_migration(&db_url, &db_name, delete_if_exist).await?;
 
     Ok(())
 }

@@ -14,7 +14,8 @@ dotenvy = "0.15.6"
 dotenvy_macro = "0.15.1"
 
 [dependencies.sea-orm-migration]
-version = "^0.10.0"
+# use git until "close" method is available on crates.io
+git = "https://github.com/SeaQL/sea-orm/"
 features = [
   "runtime-tokio-rustls", # `ASYNC_RUNTIME` feature
   "sqlx-postgres",        # `DATABASE_DRIVER` feature

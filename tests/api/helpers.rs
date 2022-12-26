@@ -17,15 +17,23 @@ fn port_is_available(port: u16) -> bool {
     }
 }
 
-pub async fn spawn_app() -> AppState {
+#[derive(Debug)]
+pub struct DbInfo {
+    pub url: String,
+    pub name: String,
+}
+
+pub async fn spawn_app() -> (AppState, DbInfo) {
     dotenv().ok();
     let uri: String = dotenv!("API_URI").to_owned();
-    let database_uri: String = dotenv!("DB_CONNECTION").to_owned();
-    let database_name: String = Uuid::new_v4().to_string();
+    let db_info = DbInfo {
+        url: dotenv!("DB_CONNECTION").to_owned(),
+        name: Uuid::new_v4().to_string(),
+    };
     let state;
     if let Some(port) = get_available_port() {
-        let database_url = format!("{}/{}", database_uri, database_name);
-        run_migration(database_uri, database_name, true)
+        let database_url = format!("{}/{}", &db_info.url, db_info.name);
+        run_migration(&db_info.url, &db_info.name, true)
             .await
             .unwrap();
 
@@ -38,9 +46,17 @@ pub async fn spawn_app() -> AppState {
         };
         let app_state = AppState { port, uri, db };
         state = app_state.clone();
-        tokio::spawn(async move { run(app_state).await.expect("Failed to run the server") });
+        let _ =
+            tokio::spawn(async move { run(app_state).await.expect("Failed to run the server") });
     } else {
         panic!("problem finding a port!")
     }
-    state
+    (state, db_info)
+}
+
+pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: DbInfo) {
+    let _ = db.close().await.map_err(|e| e);
+    let db = Database::connect(&db_info.url).await.unwrap();
+    drop_database(&db, &db_info.name).await.unwrap();
+    let _ = db.close().await.map_err(|e| e);
 }

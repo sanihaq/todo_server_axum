@@ -12,7 +12,8 @@ members = ["migration"]
 axum = { version = "0.6.1", features = ["macros", "headers"] }
 dotenvy = "0.15.6"
 dotenvy_macro = "0.15.1"
-sea-orm = { version = "0.10.5", features = [
+# use git until "close" method is available on crates.io
+sea-orm = { git = "https://github.com/SeaQL/sea-orm", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
 ] }

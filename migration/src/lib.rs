@@ -75,3 +75,15 @@ pub async fn drop_database(db: &DatabaseConnection, db_name: &String) -> Result<
     .await?;
     Ok(())
 }
+
+pub async fn drop_database_with_force(
+    db: &DatabaseConnection,
+    db_name: &String,
+) -> Result<(), DbErr> {
+    db.execute(Statement::from_string(
+        db.get_database_backend(),
+        format!("DROP DATABASE \"{}\" WITH (FORCE);", db_name),
+    ))
+    .await?;
+    Ok(())
+}

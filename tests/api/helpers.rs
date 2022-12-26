@@ -1,6 +1,6 @@
 use dotenvy::dotenv;
 use dotenvy_macro::dotenv;
-use migration::{drop_database, run_migration};
+use migration::{drop_database_with_force, run_migration};
 use sea_orm::Database;
 use std::net::TcpListener;
 use todo_server_axum::{app_state::AppState, run};
@@ -57,6 +57,6 @@ pub async fn spawn_app() -> (AppState, DbInfo) {
 pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: DbInfo) {
     let _ = db.close().await.map_err(|e| e);
     let db = Database::connect(&db_info.url).await.unwrap();
-    drop_database(&db, &db_info.name).await.unwrap();
+    drop_database_with_force(&db, &db_info.name).await.unwrap();
     let _ = db.close().await.map_err(|e| e);
 }

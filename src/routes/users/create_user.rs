@@ -34,7 +34,7 @@ pub async fn create_user(
         })?
         .try_into_model()
         .map_err(|error| {
-            eprintln!("Erro converting user back into model: {:?}", error);
+            eprintln!("Error converting user back into model: {:?}", error);
             AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "Error creating user")
         })?;
     Ok(Json(ResponseUser {

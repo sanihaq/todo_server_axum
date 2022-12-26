@@ -6,7 +6,7 @@ pub mod create_user;
 pub struct ResponseUser {
     pub id: i32,
     pub username: String,
-    // pub token: String,
+    pub token: String,
 }
 
 #[derive(Serialize, Deserialize)]

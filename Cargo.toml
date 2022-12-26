@@ -10,8 +10,11 @@ members = ["migration"]
 
 [dependencies]
 axum = { version = "0.6.1", features = ["macros", "headers"] }
+bcrypt = "0.13.0"
+chrono = { version = "0.4.23", features = ["serde"] }
 dotenvy = "0.15.6"
 dotenvy_macro = "0.15.1"
+jsonwebtoken = "8.2.0"
 # use git until "close" method is available on crates.io
 sea-orm = { git = "https://github.com/SeaQL/sea-orm", features = [
     "sqlx-postgres",

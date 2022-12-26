@@ -27,9 +27,12 @@ async fn create_user_works() {
 
     match response.json::<ResponseUser>().await {
         Ok(data) => {
+            assert!(data.id > 0);
             assert_eq!(data.username, user.username);
         }
-        Err(e) => panic!("Error decoding response: , {}", e),
+        Err(e) => {
+            eprintln!("Error decoding response: , {}", e);
+        }
     }
 
     let response = client

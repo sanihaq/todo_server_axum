@@ -3,7 +3,7 @@ use dotenvy_macro::dotenv;
 use migration::{drop_database_with_force, run_migration};
 use sea_orm::Database;
 use std::net::TcpListener;
-use todo_server_axum::{app_state::AppState, run};
+use todo_server_axum::{app_state::AppState, run, utilities::jwt::TokenWrapper};
 use uuid::Uuid;
 
 fn get_available_port() -> Option<u16> {
@@ -30,24 +30,36 @@ pub async fn spawn_app() -> (AppState, DbInfo) {
         url: dotenv!("DB_CONNECTION").to_owned(),
         name: Uuid::new_v4().to_string(),
     };
+    let jwt_secret: String = dotenv!("JWT_SECRET").to_owned();
     let state;
     if let Some(port) = get_available_port() {
-        let database_url = format!("{}/{}", &db_info.url, db_info.name);
         run_migration(&db_info.url, &db_info.name, true)
             .await
             .unwrap();
 
+        let database_url = format!("{}/{}", &db_info.url, db_info.name);
+
         let db = match Database::connect(database_url).await {
             Ok(db) => db,
             Err(error) => {
-                eprintln!("Error connecting to the database: {:?}", error);
-                panic!();
+                panic!("Error connecting to the database: {:?}", error);
             }
         };
-        let app_state = AppState { port, uri, db };
+        let app_state = AppState {
+            port,
+            uri,
+            db,
+            jwt_secret: TokenWrapper(jwt_secret),
+        };
         state = app_state.clone();
-        let _ =
-            tokio::spawn(async move { run(app_state).await.expect("Failed to run the server") });
+        let _ = tokio::spawn(async move {
+            match run(app_state).await {
+                Ok(app) => app,
+                Err(_) => {
+                    panic!("Failed to run the server");
+                }
+            }
+        });
     } else {
         panic!("problem finding a port!")
     }

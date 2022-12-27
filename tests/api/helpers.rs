@@ -23,7 +23,7 @@ pub struct TestUser {
     pub password: Cow<'static, str>,
 }
 
-pub const TESTUSER: TestUser = TestUser {
+pub const TEST_USER: TestUser = TestUser {
     username: Cow::Borrowed("tricky_tom"),
     password: Cow::Borrowed("tom-tick88^&"),
 };

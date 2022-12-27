@@ -4,6 +4,6 @@
         "dotenv",
         "dotenvy",
         "jsonwebtoken",
-        "reqwest"
+        "reqwest",
     ]
 }

@@ -1,6 +1,7 @@
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug)]
 pub struct AppError {
     code: StatusCode,
     message: String,

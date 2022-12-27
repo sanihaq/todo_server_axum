@@ -19,38 +19,35 @@ pub async fn spawn_app() -> (AppState, DbInfo) {
         name: Uuid::new_v4().to_string(),
     };
     let jwt_secret: String = dotenv!("JWT_SECRET").to_owned();
-    let state;
-    if let Some(port) = get_available_port() {
-        run_migration(&db_info.url, &db_info.name, true)
-            .await
-            .unwrap();
+    let port = get_available_port();
+    run_migration(&db_info.url, &db_info.name, true)
+        .await
+        .unwrap();
 
-        let database_url = format!("{}/{}", &db_info.url, db_info.name);
+    let database_url = format!("{}/{}", &db_info.url, db_info.name);
 
-        let db = match Database::connect(database_url).await {
-            Ok(db) => db,
-            Err(error) => {
-                panic!("Error connecting to the database: {:?}", error);
+    let db = match Database::connect(database_url).await {
+        Ok(db) => db,
+        Err(error) => {
+            panic!("Error connecting to the database: {:?}", error);
+        }
+    };
+    let app_state = AppState {
+        port,
+        uri,
+        db,
+        jwt_secret: TokenWrapper(jwt_secret),
+    };
+    let state = app_state.clone();
+    let _ = tokio::spawn(async move {
+        match run(app_state).await {
+            Ok(app) => app,
+            Err(_) => {
+                panic!("Failed to run the server");
             }
-        };
-        let app_state = AppState {
-            port,
-            uri,
-            db,
-            jwt_secret: TokenWrapper(jwt_secret),
-        };
-        state = app_state.clone();
-        let _ = tokio::spawn(async move {
-            match run(app_state).await {
-                Ok(app) => app,
-                Err(_) => {
-                    panic!("Failed to run the server");
-                }
-            }
-        });
-    } else {
-        panic!("problem finding a port!")
-    }
+        }
+    });
+
     (state, db_info)
 }
 
@@ -73,13 +70,7 @@ pub struct DbInfo {
     pub name: String,
 }
 
-fn get_available_port() -> Option<u16> {
-    (8000..9000).find(|port| port_is_available(*port))
-}
-
-fn port_is_available(port: u16) -> bool {
-    match TcpListener::bind(("127.0.0.1", port)) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+fn get_available_port() -> u16 {
+    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
+    listener.local_addr().unwrap().port()
 }

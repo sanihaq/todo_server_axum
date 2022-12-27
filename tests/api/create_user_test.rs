@@ -1,3 +1,5 @@
+use crate::helpers::TESTUSER;
+
 use super::helpers::{drop_database_after_test, spawn_app};
 use reqwest::StatusCode;
 use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};
@@ -8,8 +10,8 @@ async fn create_user_works() {
     let client = reqwest::Client::new();
 
     let user = RequestCreateUser {
-        username: "hello".to_owned(),
-        password: "world".to_owned(),
+        username: TESTUSER.username.into_owned(),
+        password: TESTUSER.password.into_owned(),
     };
 
     let response = client

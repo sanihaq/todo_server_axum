@@ -1,7 +1,9 @@
 {
     "cSpell.words": [
+        "chrono",
         "dotenv",
         "dotenvy",
+        "jsonwebtoken",
         "reqwest"
     ]
 }

@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 
 pub mod app_state;
 pub mod database;
+pub mod middleware;
 pub mod queries;
 pub mod routes;
 pub mod utilities;

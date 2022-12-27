@@ -32,3 +32,21 @@ pub fn create_token(secret: &str, username: String) -> Result<String, AppError> 
         )
     })
 }
+
+pub fn validate_token(secret: &str, token: &str) -> Result<bool, AppError> {
+    let key = DecodingKey::from_secret(secret.as_bytes());
+    let validation = Validation::new(jsonwebtoken::Algorithm::HS256);
+    decode::<Claims>(token, &key, &validation)
+        .map_err(|error| match error.kind() {
+            jsonwebtoken::errors::ErrorKind::InvalidToken
+            | jsonwebtoken::errors::ErrorKind::InvalidSignature
+            | jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                AppError::new(StatusCode::UNAUTHORIZED, "not authenticated!")
+            }
+            _ => {
+                eprintln!("Error validating token: {:?}", error);
+                AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "Error validating token")
+            }
+        })
+        .map(|_claim| true)
+}

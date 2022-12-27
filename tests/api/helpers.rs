@@ -2,7 +2,7 @@ use dotenvy::dotenv;
 use dotenvy_macro::dotenv;
 use migration::{drop_database_with_force, run_migration};
 use sea_orm::Database;
-use std::net::TcpListener;
+use std::{borrow::Cow, net::TcpListener};
 use todo_server_axum::{app_state::AppState, run, utilities::jwt::TokenWrapper};
 use uuid::Uuid;
 
@@ -18,11 +18,21 @@ fn port_is_available(port: u16) -> bool {
 }
 
 #[derive(Debug)]
+pub struct TestUser {
+    pub username: Cow<'static, str>,
+    pub password: Cow<'static, str>,
+}
+
+pub const TESTUSER: TestUser = TestUser {
+    username: Cow::Borrowed("tricky_tom"),
+    password: Cow::Borrowed("tom-tick88^&"),
+};
+
+#[derive(Debug)]
 pub struct DbInfo {
     pub url: String,
     pub name: String,
 }
-
 pub async fn spawn_app() -> (AppState, DbInfo) {
     dotenv().ok();
     let uri: String = dotenv!("API_URI").to_owned();

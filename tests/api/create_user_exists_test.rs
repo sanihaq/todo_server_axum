@@ -18,16 +18,14 @@ async fn create_user_exist_works() {
     };
 
     user.username = Set(TEST_USER.username.into_owned());
-    user.password =
-        Set(hash_password(&TEST_USER.password.into_owned()).expect("error hashing password."));
+    user.password = Set(hash_password(&TEST_USER.password).expect("error hashing password."));
 
-    let user = save_active_user(&state.db, user).await.expect(
-        format!(
+    let user = save_active_user(&state.db, user).await.unwrap_or_else(|_| {
+        panic!(
             "Unable to save in database.  port: {}, db: {}",
-            state.port, db_info.name
+            state.port, db_info.name,
         )
-        .as_str(),
-    );
+    });
 
     let user = RequestCreateUser {
         username: user.username,

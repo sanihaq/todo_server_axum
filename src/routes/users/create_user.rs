@@ -16,11 +16,12 @@ pub async fn create_user(
     State(jwt_secret): State<TokenWrapper>,
     Json(req_user): Json<RequestCreateUser>,
 ) -> Result<Json<ResponseUser>, AppError> {
-    if let Some(_) = Users::find()
+    if (Users::find()
         .filter(users::Column::Username.eq(req_user.username.clone()))
         .one(&db)
         .await
-        .map_err(|_| general_server_error())?
+        .map_err(|_| general_server_error())?)
+    .is_some()
     {
         return Err(AppError::new(StatusCode::CONFLICT, "User already exists."));
     }

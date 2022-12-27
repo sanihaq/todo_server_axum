@@ -17,21 +17,19 @@ async fn logout_user_works() {
     };
 
     user.username = Set(TEST_USER.username.into_owned());
-    user.password =
-        Set(hash_password(&TEST_USER.password.into_owned()).expect("error hashing password."));
+    user.password = Set(hash_password(&TEST_USER.password).expect("error hashing password."));
 
     let token = create_token(&state.jwt_secret.0, TEST_USER.username.into_owned())
         .expect("error creating token.");
 
     user.token = Set(Some(token.clone()));
 
-    let _ = save_active_user(&state.db, user).await.expect(
-        format!(
+    let _ = save_active_user(&state.db, user).await.unwrap_or_else(|_| {
+        panic!(
             "Unable to save in database.  port: {}, db: {}",
             state.port, db_info.name
         )
-        .as_str(),
-    );
+    });
 
     let response = client
         .post(&format!("{}:{}/api/v1/users/logout", state.uri, state.port))
@@ -58,17 +56,11 @@ async fn logout_user_works() {
         user.id, state.port, db_info.name
     );
 
-    match user.token {
-        Some(token) => assert_eq!(
-            token, "",
+    if let Some(token) = user.token {
+        panic!(
             "token should be empty, got {}. port: {}, db: {}",
             token, state.port, db_info.name
-        ),
-        None => assert!(
-            true,
-            "token not found in database: {}, port: {}",
-            db_info.name, state.port
-        ),
+        )
     };
 
     drop_database_after_test(state.db, db_info).await;

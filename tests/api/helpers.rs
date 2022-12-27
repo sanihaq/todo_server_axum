@@ -52,10 +52,10 @@ pub async fn spawn_app() -> (AppState, DbInfo) {
 }
 
 pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: DbInfo) {
-    let _ = db.close().await.map_err(|e| e);
+    let _ = db.close().await;
     let db = Database::connect(&db_info.url).await.unwrap();
     drop_database_with_force(&db, &db_info.name).await.unwrap();
-    let _ = db.close().await.map_err(|e| e);
+    let _ = db.close().await;
 }
 
 #[derive(Debug)]

@@ -1,3 +1,4 @@
+#![allow(clippy::clone_on_copy)]
 use axum::extract::FromRef;
 use sea_orm::DatabaseConnection;
 

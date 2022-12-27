@@ -24,13 +24,12 @@ async fn login_user_works() {
     user.username = Set(request_user.username.clone());
     user.password = Set(hash_password(&request_user.password).expect("error hashing password."));
 
-    let _ = save_active_user(&state.db, user).await.expect(
-        format!(
+    let _ = save_active_user(&state.db, user).await.unwrap_or_else(|_| {
+        panic!(
             "Unable to save in database.  port: {}, db: {}",
             state.port, db_info.name
         )
-        .as_str(),
-    );
+    });
 
     let response = client
         .post(&format!("{}:{}/api/v1/users/login", state.uri, state.port))
@@ -69,8 +68,7 @@ async fn login_user_works() {
                     "expected username was {}, got {}. port: {}, db: {}",
                     data.username, user.username, state.port, db_info.name
                 ),
-                None => assert!(
-                    true,
+                None => panic!(
                     "token not found in database: {}, port: {}",
                     db_info.name, state.port
                 ),

@@ -25,15 +25,15 @@ pub async fn run_migration(
 ) -> Result<(), DbErr> {
     let db = Database::connect(db_url).await?;
 
-    let _ = if let sea_orm::DatabaseBackend::Postgres = db.get_database_backend() {
+    if let sea_orm::DatabaseBackend::Postgres = db.get_database_backend() {
         if drop_if_exist {
-            create_database(&db, &db_name, drop_if_exist).await?;
+            create_database(&db, db_name, drop_if_exist).await?;
         }
     } else {
         panic!("database supposed to be Postgres!!")
     };
 
-    let _ = db.close().await.map_err(|e| e);
+    let _ = db.close().await;
 
     let db = Database::connect(format!("{}/{}", db_url, db_name)).await?;
 
@@ -46,7 +46,7 @@ pub async fn run_migration(
     assert!(schema_manager.has_table("users").await?);
     assert!(schema_manager.has_table("tasks").await?);
 
-    let _ = db.close().await.map_err(|e| e);
+    let _ = db.close().await;
 
     Ok(())
 }
@@ -57,7 +57,7 @@ pub async fn create_database(
     drop_if_exist: bool,
 ) -> Result<(), DbErr> {
     if drop_if_exist {
-        drop_database(&db, db_name).await?
+        drop_database(db, db_name).await?
     }
     db.execute(Statement::from_string(
         db.get_database_backend(),

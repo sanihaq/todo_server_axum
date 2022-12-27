@@ -42,8 +42,7 @@ async fn create_user_works() {
                 "On database id shouldn't be {}. port: {}, db: {}",
                 user.id, state.port, db_info.name
             ),
-            None => assert!(
-                true,
+            None => panic!(
                 "username with {}, not found in database: {}, port: {}",
                 user.username, db_info.name, state.port
             ),

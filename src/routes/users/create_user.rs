@@ -1,6 +1,7 @@
 use super::{RequestCreateUser, ResponseUser};
 use crate::{
     database::users::{self, Entity as Users},
+    queries::user_queries::save_active_user,
     utilities::{
         app_error::{general_server_error, AppError},
         hash::hash_password,
@@ -8,9 +9,7 @@ use crate::{
     },
 };
 use axum::{extract::State, http::StatusCode, Json};
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set, TryIntoModel,
-};
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
 
 pub async fn create_user(
     State(db): State<DatabaseConnection>,
@@ -31,18 +30,8 @@ pub async fn create_user(
     user.username = Set(req_user.username.clone());
     user.password = Set(hash_password(&req_user.password)?);
     user.token = Set(Some(create_token(&jwt_secret.0, req_user.username)?));
-    let user = user
-        .save(&db)
-        .await
-        .map_err(|error| {
-            eprintln!("Error creating user: {:?}", error);
-            general_server_error()
-        })?
-        .try_into_model()
-        .map_err(|error| {
-            eprintln!("Error converting user back into model: {:?}", error);
-            AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "Error creating user")
-        })?;
+    let user = save_active_user(&db, user).await?;
+
     Ok(Json(ResponseUser {
         id: user.id,
         username: user.username,

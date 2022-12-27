@@ -11,7 +11,7 @@ pub struct ResponseUser {
     pub token: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RequestCreateUser {
     pub username: String,
     pub password: String,

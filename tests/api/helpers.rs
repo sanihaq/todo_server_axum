@@ -6,33 +6,11 @@ use std::{borrow::Cow, net::TcpListener};
 use todo_server_axum::{app_state::AppState, run, utilities::jwt::TokenWrapper};
 use uuid::Uuid;
 
-fn get_available_port() -> Option<u16> {
-    (8000..9000).find(|port| port_is_available(*port))
-}
-
-fn port_is_available(port: u16) -> bool {
-    match TcpListener::bind(("127.0.0.1", port)) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
-}
-
-#[derive(Debug)]
-pub struct TestUser {
-    pub username: Cow<'static, str>,
-    pub password: Cow<'static, str>,
-}
-
 pub const TEST_USER: TestUser = TestUser {
     username: Cow::Borrowed("tricky_tom"),
     password: Cow::Borrowed("tom-tick88^&"),
 };
 
-#[derive(Debug)]
-pub struct DbInfo {
-    pub url: String,
-    pub name: String,
-}
 pub async fn spawn_app() -> (AppState, DbInfo) {
     dotenv().ok();
     let uri: String = dotenv!("API_URI").to_owned();
@@ -81,4 +59,27 @@ pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: 
     let db = Database::connect(&db_info.url).await.unwrap();
     drop_database_with_force(&db, &db_info.name).await.unwrap();
     let _ = db.close().await.map_err(|e| e);
+}
+
+#[derive(Debug)]
+pub struct TestUser {
+    pub username: Cow<'static, str>,
+    pub password: Cow<'static, str>,
+}
+
+#[derive(Debug)]
+pub struct DbInfo {
+    pub url: String,
+    pub name: String,
+}
+
+fn get_available_port() -> Option<u16> {
+    (8000..9000).find(|port| port_is_available(*port))
+}
+
+fn port_is_available(port: u16) -> bool {
+    match TcpListener::bind(("127.0.0.1", port)) {
+        Ok(_) => true,
+        Err(_) => false,
+    }
 }

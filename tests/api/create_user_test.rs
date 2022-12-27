@@ -80,6 +80,7 @@ async fn create_user_works() {
         .send()
         .await
         .expect("Failed to execute request.");
+
     assert_eq!(
         response.status(),
         StatusCode::CONFLICT,

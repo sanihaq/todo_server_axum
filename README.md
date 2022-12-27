@@ -1,4 +1,4 @@
-##   A Todo server written in axum for learning purposes
+## If you find this helpful, Give this [repo](https://github.com/sanihaq/todo_server_axum) a star :star:
 
 ### Getting Started
 

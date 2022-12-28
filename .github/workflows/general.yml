@@ -19,6 +19,9 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: 'Create env file'
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - name: Build and archive tests
@@ -36,6 +39,14 @@ jobs:
     strategy:
       matrix:
         partition: [1, 2]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
     steps:
       # The source directory must be checked out. 
       - uses: actions/checkout@v2
@@ -43,6 +54,9 @@ jobs:
           # By default actions/checkout checks out a merge commit. Check out the PR head instead.
           # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: 'Create env file'
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
       # In this example, the Rust toolchain is not installed. cargo nextest's run phase does not
       # require Cargo. You can choose to install Rust if your tests require it, of course.
       # Instead, create ~/.cargo/bin as required by the install action.

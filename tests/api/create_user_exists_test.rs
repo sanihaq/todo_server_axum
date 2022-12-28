@@ -1,40 +1,18 @@
-use crate::helpers::TEST_USER;
+use crate::helpers::setup_user;
 
 use super::helpers::{drop_database_after_test, spawn_app};
 use reqwest::StatusCode;
-use sea_orm::Set;
-use todo_server_axum::database::users::{self};
-use todo_server_axum::queries::user_queries::save_active_user;
-use todo_server_axum::routes::users::RequestCreateUser;
-use todo_server_axum::utilities::hash::hash_password;
 
 #[tokio::test]
 async fn create_user_exist_works() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
 
-    let mut user = users::ActiveModel {
-        ..Default::default()
-    };
-
-    user.username = Set(TEST_USER.username.into_owned());
-    user.password = Set(hash_password(&TEST_USER.password).expect("error hashing password."));
-
-    let user = save_active_user(&state.db, user).await.unwrap_or_else(|_| {
-        panic!(
-            "Unable to save in database.  port: {}, db: {}",
-            state.port, db_info.name,
-        )
-    });
-
-    let user = RequestCreateUser {
-        username: user.username,
-        password: user.password,
-    };
+    let (request_user, _user) = setup_user(&state, &db_info).await;
 
     let response = client
         .post(&format!("{}:{}/api/v1/users", state.uri, state.port))
-        .json(&user)
+        .json(&request_user)
         .send()
         .await
         .expect("Failed to execute request.");

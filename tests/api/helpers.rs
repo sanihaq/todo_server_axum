@@ -1,8 +1,12 @@
 use dotenvy::dotenv;
 use dotenvy_macro::dotenv;
 use migration::{drop_database_with_force, run_migration};
-use sea_orm::Database;
+use sea_orm::{Database, Set};
 use std::{borrow::Cow, net::TcpListener};
+use todo_server_axum::database::users::{self, ActiveModel as User};
+use todo_server_axum::queries::user_queries::save_active_user;
+use todo_server_axum::routes::users::RequestCreateUser;
+use todo_server_axum::utilities::hash::hash_password;
 use todo_server_axum::{app_state::AppState, run, utilities::jwt::TokenWrapper};
 use uuid::Uuid;
 
@@ -56,6 +60,31 @@ pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: 
     let db = Database::connect(&db_info.url).await.unwrap();
     drop_database_with_force(&db, &db_info.name).await.unwrap();
     let _ = db.close().await;
+}
+
+pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUser, User) {
+    let request_user = RequestCreateUser {
+        username: TEST_USER.username.into_owned(),
+        password: TEST_USER.password.into_owned(),
+    };
+
+    let mut user = users::ActiveModel {
+        ..Default::default()
+    };
+
+    user.username = Set(request_user.username.clone());
+    user.password = Set(hash_password(&request_user.password).expect("error hashing password."));
+
+    let _ = save_active_user(&state.db, user.clone())
+        .await
+        .unwrap_or_else(|_| {
+            panic!(
+                "Unable to save in database.  port: {}, db: {}",
+                state.port, db_info.name
+            )
+        });
+
+    (request_user, user)
 }
 
 #[derive(Debug)]

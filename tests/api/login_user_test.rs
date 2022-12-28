@@ -1,35 +1,14 @@
-use crate::helpers::TEST_USER;
+use crate::helpers::setup_user;
 
 use super::helpers::{drop_database_after_test, spawn_app};
-use sea_orm::Set;
-use todo_server_axum::database::users::{self};
-use todo_server_axum::queries::user_queries::{find_by_username, save_active_user};
-use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};
-use todo_server_axum::utilities::hash::hash_password;
+use todo_server_axum::queries::user_queries::find_by_username;
+use todo_server_axum::routes::users::ResponseUser;
 
 #[tokio::test]
 async fn login_user_works() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
-
-    let request_user = RequestCreateUser {
-        username: TEST_USER.username.into_owned(),
-        password: TEST_USER.password.into_owned(),
-    };
-
-    let mut user = users::ActiveModel {
-        ..Default::default()
-    };
-
-    user.username = Set(request_user.username.clone());
-    user.password = Set(hash_password(&request_user.password).expect("error hashing password."));
-
-    let _ = save_active_user(&state.db, user).await.unwrap_or_else(|_| {
-        panic!(
-            "Unable to save in database.  port: {}, db: {}",
-            state.port, db_info.name
-        )
-    });
+    let (request_user, _user) = setup_user(&state, &db_info).await;
 
     let response = client
         .post(&format!("{}:{}/api/v1/users/login", state.uri, state.port))
@@ -75,9 +54,55 @@ async fn login_user_works() {
             };
         }
         Err(e) => {
-            eprintln!("Error decoding response: , {}", e);
+            panic!("Error decoding response: , {}", e);
         }
     }
 
     drop_database_after_test(state.db, db_info).await;
+}
+
+#[tokio::test]
+async fn login_user_fails_with_wrong_username() {
+    let (state, db_info) = spawn_app().await;
+    let client = reqwest::Client::new();
+    let (mut request_user, _user) = setup_user(&state, &db_info).await;
+
+    request_user.username = "username".to_string();
+
+    let response = client
+        .post(&format!("{}:{}/api/v1/users/login", state.uri, state.port))
+        .json(&request_user)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+    assert!(
+        !response.status().is_success(),
+        "status code was: {}, expected code was 400. port: {}, db: {}",
+        response.status(),
+        state.port,
+        db_info.name
+    );
+}
+
+#[tokio::test]
+async fn login_user_fails_with_wrong_password() {
+    let (state, db_info) = spawn_app().await;
+    let client = reqwest::Client::new();
+    let (mut request_user, _user) = setup_user(&state, &db_info).await;
+
+    request_user.username = "password".to_string();
+
+    let response = client
+        .post(&format!("{}:{}/api/v1/users/login", state.uri, state.port))
+        .json(&request_user)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+    assert!(
+        !response.status().is_success(),
+        "status code was: {}, expected code was 400. port: {}, db: {}",
+        response.status(),
+        state.port,
+        db_info.name
+    );
 }

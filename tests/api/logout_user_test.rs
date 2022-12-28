@@ -69,3 +69,25 @@ async fn logout_with_wrong_token_should_fail() {
         db_info.name
     );
 }
+
+#[tokio::test]
+async fn logout_with_no_token_should_fail() {
+    let (state, db_info) = spawn_app().await;
+    let client = reqwest::Client::new();
+
+    let (_request_user, _user, _token) = setup_user(&state, &db_info).await;
+
+    let response = client
+        .post(&format!("{}:{}/api/v1/users/logout", state.uri, state.port))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(
+        !response.status().is_success(),
+        "status code was: {}, expected code was 401. port: {}, db: {}",
+        response.status(),
+        state.port,
+        db_info.name
+    );
+}

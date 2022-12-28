@@ -72,36 +72,6 @@ jobs:
           ~/.cargo/bin/cargo-nextest nextest run --archive-file nextest-archive.tar.zst \
             --partition count:${{ matrix.partition }}/2
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-    steps:
-      - name: Setup | Checkout repository
-        uses: actions/checkout@v2
-      - name: Setup | Cache rust
-        uses: Swatinem/rust-cache@v1
-      - name: Setup | Setup rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: 'Create env file'
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-      - name: Build | Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-
   clippy:
     name: Clippy
     runs-on: ubuntu-latest

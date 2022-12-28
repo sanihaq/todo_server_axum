@@ -51,8 +51,8 @@ async fn create_user_works() {
                 );
                 let is_verified = verify_password(&req_user.password, &user.password)
                     .expect("error hashing password.");
-                assert_eq!(
-                    is_verified, true,
+                assert!(
+                    is_verified,
                     "Verification failed on password from database. port: {}, db: {}",
                     state.port, db_info.name
                 );

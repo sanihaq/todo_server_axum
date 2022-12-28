@@ -45,7 +45,7 @@ where
 
         if let Err(errors) = task.validate() {
             let field_errors = errors.field_errors();
-            for (_, error) in field_errors {
+            if let Some((_, error)) = field_errors.into_iter().next() {
                 return Err(AppError::new(
                     StatusCode::BAD_REQUEST,
                     error.first().unwrap().clone().message.unwrap().to_string(), // feel safe unwrapping because we know there is at least one error, and we only care about the first for this api

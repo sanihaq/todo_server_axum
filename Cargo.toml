@@ -21,8 +21,10 @@ sea-orm = { git = "https://github.com/SeaQL/sea-orm", features = [
     "runtime-tokio-rustls",
 ] }
 serde = { version = "1.0.151", features = ["derive"] }
+serde_with = "2.1.0"
 tokio = { version = "1.23.0", features = ["rt-multi-thread", "macros"] }
 uuid = { version = "1.2.2", features = ["v4", "serde"] }
+validator = { version = "0.16.0", features = ["derive"] }
 
 [dev-dependencies]
 reqwest = { version = "0.11.13", features = ["json", "cookies", "rustls-tls"] }

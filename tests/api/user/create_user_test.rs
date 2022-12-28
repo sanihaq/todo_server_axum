@@ -1,6 +1,4 @@
-use crate::helpers::TEST_USER;
-
-use super::helpers::{drop_database_after_test, spawn_app};
+use crate::helpers::{drop_database_after_test, spawn_app, TEST_USER};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use todo_server_axum::database::users::{self, Entity as Users};
 use todo_server_axum::routes::users::{RequestCreateUser, ResponseUser};

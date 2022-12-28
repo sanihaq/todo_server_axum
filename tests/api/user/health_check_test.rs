@@ -1,4 +1,4 @@
-use super::helpers::{drop_database_after_test, spawn_app};
+use crate::helpers::{drop_database_after_test, spawn_app};
 
 #[tokio::test]
 async fn health_check_works() {

@@ -1,6 +1,4 @@
-use crate::helpers::setup_user;
-
-use super::helpers::{drop_database_after_test, spawn_app};
+use crate::helpers::{drop_database_after_test, setup_user, spawn_app};
 use reqwest::StatusCode;
 
 #[tokio::test]

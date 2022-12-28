@@ -7,6 +7,7 @@ use todo_server_axum::database::users::{self, ActiveModel as User};
 use todo_server_axum::queries::user_queries::save_active_user;
 use todo_server_axum::routes::users::RequestCreateUser;
 use todo_server_axum::utilities::hash::hash_password;
+use todo_server_axum::utilities::jwt::create_token;
 use todo_server_axum::{app_state::AppState, run, utilities::jwt::TokenWrapper};
 use uuid::Uuid;
 
@@ -62,7 +63,7 @@ pub async fn drop_database_after_test(db: sea_orm::DatabaseConnection, db_info: 
     let _ = db.close().await;
 }
 
-pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUser, User) {
+pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUser, User, String) {
     let request_user = RequestCreateUser {
         username: TEST_USER.username.into_owned(),
         password: TEST_USER.password.into_owned(),
@@ -75,6 +76,11 @@ pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUse
     user.username = Set(request_user.username.clone());
     user.password = Set(hash_password(&request_user.password).expect("error hashing password."));
 
+    let token = create_token(&state.jwt_secret.0, TEST_USER.username.into_owned())
+        .expect("error creating token.");
+
+    user.token = Set(Some(token.clone()));
+
     let _ = save_active_user(&state.db, user.clone())
         .await
         .unwrap_or_else(|_| {
@@ -84,7 +90,7 @@ pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUse
             )
         });
 
-    (request_user, user)
+    (request_user, user, token)
 }
 
 #[derive(Debug)]

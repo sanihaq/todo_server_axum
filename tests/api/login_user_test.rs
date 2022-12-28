@@ -8,7 +8,7 @@ use todo_server_axum::routes::users::ResponseUser;
 async fn login_user_works() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
-    let (request_user, _user) = setup_user(&state, &db_info).await;
+    let (request_user, _user, _) = setup_user(&state, &db_info).await;
 
     let response = client
         .post(&format!("{}:{}/api/v1/users/login", state.uri, state.port))
@@ -62,10 +62,10 @@ async fn login_user_works() {
 }
 
 #[tokio::test]
-async fn login_user_fails_with_wrong_username() {
+async fn login_user_with_wrong_username_should_fail() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
-    let (mut request_user, _user) = setup_user(&state, &db_info).await;
+    let (mut request_user, _user, _) = setup_user(&state, &db_info).await;
 
     request_user.username = "username".to_string();
 
@@ -85,10 +85,10 @@ async fn login_user_fails_with_wrong_username() {
 }
 
 #[tokio::test]
-async fn login_user_fails_with_wrong_password() {
+async fn login_user_with_wrong_password_should_fail() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
-    let (mut request_user, _user) = setup_user(&state, &db_info).await;
+    let (mut request_user, _user, _) = setup_user(&state, &db_info).await;
 
     request_user.username = "password".to_string();
 

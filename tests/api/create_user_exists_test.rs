@@ -8,7 +8,7 @@ async fn create_user_exist_works() {
     let (state, db_info) = spawn_app().await;
     let client = reqwest::Client::new();
 
-    let (request_user, _user) = setup_user(&state, &db_info).await;
+    let (request_user, _user, _) = setup_user(&state, &db_info).await;
 
     let response = client
         .post(&format!("{}:{}/api/v1/users", state.uri, state.port))

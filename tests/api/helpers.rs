@@ -3,7 +3,7 @@ use dotenvy_macro::dotenv;
 use migration::{drop_database_with_force, run_migration};
 use sea_orm::{Database, Set};
 use std::{borrow::Cow, net::TcpListener};
-use todo_server_axum::database::users::{self, ActiveModel as User};
+use todo_server_axum::database::users::{self, Model as User};
 use todo_server_axum::queries::user_queries::save_active_user;
 use todo_server_axum::routes::users::RequestCreateUser;
 use todo_server_axum::utilities::hash::hash_password;
@@ -14,6 +14,10 @@ use uuid::Uuid;
 pub const TEST_USER: TestUser = TestUser {
     username: Cow::Borrowed("tricky_tom"),
     password: Cow::Borrowed("tom-tick88^&"),
+};
+
+pub const TEST_TASK: TestTask = TestTask {
+    title: Cow::Borrowed("A test task."),
 };
 
 pub async fn spawn_app() -> (AppState, DbInfo) {
@@ -81,7 +85,7 @@ pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUse
 
     user.token = Set(Some(token.clone()));
 
-    let _ = save_active_user(&state.db, user.clone())
+    let user = save_active_user(&state.db, user.clone())
         .await
         .unwrap_or_else(|_| {
             panic!(
@@ -91,6 +95,11 @@ pub async fn setup_user(state: &AppState, db_info: &DbInfo) -> (RequestCreateUse
         });
 
     (request_user, user, token)
+}
+
+#[derive(Debug)]
+pub struct TestTask {
+    pub title: Cow<'static, str>,
 }
 
 #[derive(Debug)]

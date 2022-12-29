@@ -1,3 +1,4 @@
+use super::ResponseTask;
 use crate::{
     database::users::Model as UserModel,
     queries::task_queries,
@@ -5,8 +6,6 @@ use crate::{
 };
 use axum::{extract::State, http::StatusCode, Extension, Json};
 use sea_orm::DatabaseConnection;
-
-use super::ResponseTask;
 
 pub async fn create_task(
     Extension(user): Extension<UserModel>,

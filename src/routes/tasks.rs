@@ -2,6 +2,7 @@ use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 pub mod create_task;
+pub mod get_all_task;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestTask {

@@ -51,6 +51,23 @@ pub async fn find_task_by_id(
     })
 }
 
+pub async fn get_all_tasks(
+    db: &DatabaseConnection,
+    user_id: i32,
+    get_deleted: bool,
+) -> Result<Vec<TaskModel>, AppError> {
+    let mut query = Tasks::find().filter(tasks::Column::UserId.eq(Some(user_id)));
+
+    if !get_deleted {
+        query = query.filter(tasks::Column::DeletedAt.is_null());
+    }
+
+    query.all(db).await.map_err(|error| {
+        eprintln!("Error getting all tasks: {:?}", error);
+        AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "Error getting all tasks")
+    })
+}
+
 pub async fn save_active_task(
     db: &DatabaseConnection,
     task: tasks::ActiveModel,

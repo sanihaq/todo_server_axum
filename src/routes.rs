@@ -1,6 +1,6 @@
 use axum::{
     middleware,
-    routing::{get, patch, post, put},
+    routing::{delete, get, patch, post, put},
     Router,
 };
 
@@ -11,6 +11,7 @@ pub mod users;
 use self::{
     tasks::{
         create_task::create_task,
+        delete_task::soft_delete_task,
         get_all_task::get_all_task,
         get_task::get_task,
         update_task::{mark_done, mark_undone, update_task},
@@ -22,13 +23,14 @@ use health_check::health_check;
 
 pub fn build_routes(app_state: AppState) -> Router {
     Router::new()
-        .route("/api/v1/users/logout", post(logout))
         .route("/api/v1/tasks", post(create_task))
         .route("/api/v1/tasks", get(get_all_task))
         .route("/api/v1/tasks/:task_id", get(get_task))
         .route("/api/v1/tasks/:task_id", patch(update_task))
         .route("/api/v1/tasks/:task_id/done", put(mark_done))
         .route("/api/v1/tasks/:task_id/undone", put(mark_undone))
+        .route("/api/v1/tasks/:task_id", delete(soft_delete_task))
+        .route("/api/v1/users/logout", post(logout))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             require_authentication,

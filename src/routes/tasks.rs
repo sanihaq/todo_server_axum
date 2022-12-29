@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod create_task;
 pub mod get_all_task;
+pub mod get_task;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RequestTask {

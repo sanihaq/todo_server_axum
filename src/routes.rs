@@ -9,7 +9,7 @@ pub mod tasks;
 pub mod users;
 
 use self::{
-    tasks::{create_task::create_task, get_all_task::get_all_task},
+    tasks::{create_task::create_task, get_all_task::get_all_task, get_task::get_task},
     users::{create_user::create_user, login::login, logout::logout},
 };
 use crate::{app_state::AppState, middleware::guard::require_authentication};
@@ -20,6 +20,7 @@ pub fn build_routes(app_state: AppState) -> Router {
         .route("/api/v1/users/logout", post(logout))
         .route("/api/v1/tasks", post(create_task))
         .route("/api/v1/tasks", get(get_all_task))
+        .route("/api/v1/tasks/:task_id", get(get_task))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             require_authentication,
